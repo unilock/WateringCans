@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:bone_meal"
+  },
+  "base": {
+    "item": "watering_cans:mega_watering_can"
+  },
+  "addition": {
+    "item": "minecraft:netherite_ingot"
+  },
+  "result": {
+    "item": "watering_cans:giga_watering_can"
+  }
+}

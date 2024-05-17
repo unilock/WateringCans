@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "watering_cans:item/base_watering_can"
+  }
+}

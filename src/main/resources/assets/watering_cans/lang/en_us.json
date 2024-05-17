@@ -1,0 +1,8 @@
+{
+  "itemGroup.watering_cans.watering_cans": "Watering Cans",
+
+  "item.watering_cans.base_watering_can": "Base Watering Can",
+  "item.watering_cans.kilo_watering_can": "Kilo Watering Can",
+  "item.watering_cans.mega_watering_can": "Mega Watering Can",
+  "item.watering_cans.giga_watering_can": "Giga Watering Can"
+}

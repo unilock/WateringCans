@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "XY",
+    "XZX",
+    " X "
+  ],
+  "key": {
+    "X": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Y": {
+      "item": "minecraft:bone_meal"
+    },
+    "Z": {
+      "item": "minecraft:bowl"
+    }
+  },
+  "result": {
+    "item": "watering_cans:base_watering_can"
+  }
+}

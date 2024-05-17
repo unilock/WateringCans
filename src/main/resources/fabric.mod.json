@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "watering_cans",
+	"version": "${version}",
+	"name": "Watering Cans",
+	"description": "Adds simple watering cans to irrigate crops and such.",
+	"authors": [
+		"unilock"
+	],
+	"contact": {
+		"sources": "https://github.com/unilock/WateringCans",
+		"issues": "https://github.com/unilock/WateringCans/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/watering_cans/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"cc.unilock.watering_cans.WateringCans"
+		],
+		"client": [
+			"cc.unilock.watering_cans.WateringCansClient"
+		]
+	},
+	"depends": {
+		"fabricloader": "*",
+		"minecraft": ">=1.20",
+		"fabric-api": "*"
+	}
+}
