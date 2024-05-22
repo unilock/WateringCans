@@ -12,7 +12,7 @@
 		"issues": "https://github.com/unilock/WateringCans/issues"
 	},
 	"license": "MIT",
-	"icon": "assets/watering_cans/icon.png",
+	"icon": "assets/watering_cans/textures/item/base_watering_can.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
