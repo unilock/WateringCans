@@ -62,19 +62,27 @@ public class WateringCanItem extends Item {
 			if (hitResult instanceof BlockHitResult blockHitResult && hitResult.getType() == HitResult.Type.BLOCK) {
 				if (!world.isClient) {
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
-						List<BlockPos> list = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range).map(BlockPos::toImmutable).filter(pos -> world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos), false)).toList();
+						List<BlockPos> list = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)
+							.map(BlockPos::toImmutable)
+							.filter(pos ->
+								world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable
+									&& fertilizable.isFertilizable(world, pos, world.getBlockState(pos), false)
+							)
+							.toList();
 
 						if (list.isEmpty()) return;
 
-						BlockPos pos = list.get(world.getRandom().nextInt(list.size()));
-						BlockState state = world.getBlockState(pos);
-						Fertilizable fertilizable = (Fertilizable) state.getBlock();
+						for (int i = 0; i <= this.range; i++) {
+							BlockPos pos = list.get(world.getRandom().nextInt(list.size()));
+							BlockState state = world.getBlockState(pos);
+							Fertilizable fertilizable = (Fertilizable) state.getBlock();
 
-						if (fertilizable.canGrow(world, world.getRandom(), pos, state)) {
-							fertilizable.grow((ServerWorld) world, world.getRandom(), pos, state);
+							if (fertilizable.canGrow(world, world.getRandom(), pos, state)) {
+								fertilizable.grow((ServerWorld) world, world.getRandom(), pos, state);
+							}
+
+							world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, pos, 0);
 						}
-
-						world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, pos, 0);
 					}
 				}
 
