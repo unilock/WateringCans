@@ -18,6 +18,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class WateringCanItem extends Item {
@@ -60,12 +61,11 @@ public class WateringCanItem extends Item {
 
 			if (hitResult instanceof BlockHitResult blockHitResult && hitResult.getType() == HitResult.Type.BLOCK) {
 				if (!world.isClient) {
-					// maxY = 0
 					List<BlockPos> blocks = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 0, this.range)
 						.map(BlockPos::toImmutable)
 						.toList();
 
-					blocks.forEach(pos -> {
+					blocks.forEach(pos ->
 						((ServerWorld) world).spawnParticles(ParticleTypes.SPLASH,
 							pos.getX() + world.random.nextDouble(),
 							pos.getY() + 1,
@@ -74,19 +74,23 @@ public class WateringCanItem extends Item {
 							0.0,
 							0.0,
 							0.0,
-							1.0);
-					});
+							1.0)
+					);
 
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
-						// TODO: simplify this with other List<BlockPos>
-						// maxY = 1
-						List<BlockPos> fertilizeables = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)
-							.map(BlockPos::toImmutable)
-							.filter(pos ->
-								world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable
-									&& fertilizable.isFertilizable(world, pos, world.getBlockState(pos), false)
-							)
-							.toList();
+						// TODO: this can likely be simplified further?
+						List<BlockPos> fertilizeables = new ArrayList<>();
+
+						blocks.forEach(base -> {
+							if (isFertilizable(world, base)) {
+								fertilizeables.add(base);
+							}
+
+							BlockPos up = base.up();
+							if (isFertilizable(world, up)) {
+								fertilizeables.add(up);
+							}
+						});
 
 						if (fertilizeables.isEmpty()) return;
 
@@ -121,5 +125,9 @@ public class WateringCanItem extends Item {
 
 	private HitResult getHitResult(LivingEntity user) {
 		return ProjectileUtil.getCollision(user, entity -> !entity.isSpectator() && entity.canHit(), MAX_WATERING_DISTANCE);
+	}
+
+	private static boolean isFertilizable(World world, BlockPos pos) {
+		return world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos), world.isClient);
 	}
 }
