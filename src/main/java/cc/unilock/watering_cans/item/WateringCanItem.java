@@ -9,6 +9,7 @@ import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
@@ -61,7 +62,26 @@ public class WateringCanItem extends Item {
 
 			if (hitResult instanceof BlockHitResult blockHitResult && hitResult.getType() == HitResult.Type.BLOCK) {
 				if (!world.isClient) {
+					// maxY = 0
+					List<BlockPos> blocks = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 0, this.range)
+						.map(BlockPos::toImmutable)
+						.toList();
+
+					blocks.forEach(pos -> {
+						((ServerWorld) world).spawnParticles(ParticleTypes.SPLASH,
+							pos.getX() + world.random.nextDouble(),
+							pos.getY() + 1,
+							pos.getZ() + world.random.nextDouble(),
+							1,
+							0.0,
+							0.0,
+							0.0,
+							1.0);
+					});
+
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
+						// TODO: simplify this with other List<BlockPos>
+						// maxY = 1
 						List<BlockPos> list = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)
 							.map(BlockPos::toImmutable)
 							.filter(pos ->
