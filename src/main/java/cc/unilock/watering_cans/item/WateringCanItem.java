@@ -1,7 +1,6 @@
 package cc.unilock.watering_cans.item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Fertilizable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,7 +17,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldEvents;
 
 import java.util.List;
 
@@ -82,7 +80,7 @@ public class WateringCanItem extends Item {
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
 						// TODO: simplify this with other List<BlockPos>
 						// maxY = 1
-						List<BlockPos> list = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)
+						List<BlockPos> fertilizeables = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)
 							.map(BlockPos::toImmutable)
 							.filter(pos ->
 								world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable
@@ -90,19 +88,25 @@ public class WateringCanItem extends Item {
 							)
 							.toList();
 
-						if (list.isEmpty()) return;
+						if (fertilizeables.isEmpty()) return;
 
-						for (int i = 0; i <= this.range; i++) {
-							BlockPos pos = list.get(world.getRandom().nextInt(list.size()));
-							BlockState state = world.getBlockState(pos);
-							Fertilizable fertilizable = (Fertilizable) state.getBlock();
-
-							if (fertilizable.canGrow(world, world.getRandom(), pos, state)) {
-								fertilizable.grow((ServerWorld) world, world.getRandom(), pos, state);
+						fertilizeables.forEach(pos -> {
+							if (world.getBlockState(pos).hasRandomTicks()) {
+								world.getBlockState(pos).randomTick((ServerWorld) world, pos, world.random);
 							}
+						});
 
-							world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, pos, 0);
-						}
+//						for (int i = 0; i <= this.range; i++) {
+//							BlockPos pos = list.get(world.random.nextInt(list.size()));
+//							BlockState state = world.getBlockState(pos);
+//							Fertilizable fertilizable = (Fertilizable) state.getBlock();
+//
+//							if (fertilizable.canGrow(world, world.random, pos, state)) {
+//								fertilizable.grow((ServerWorld) world, world.random, pos, state);
+//							}
+//
+//							world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, pos, 0);
+//						}
 					}
 				}
 
