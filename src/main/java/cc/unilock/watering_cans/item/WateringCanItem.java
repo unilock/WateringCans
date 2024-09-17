@@ -1,6 +1,8 @@
 package cc.unilock.watering_cans.item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.block.Block;
+import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.Fertilizable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -82,6 +84,10 @@ public class WateringCanItem extends Item {
 						List<BlockPos> fertilizeables = new ArrayList<>();
 
 						blocks.forEach(base -> {
+							if (world.getBlockState(base).getBlock() instanceof FarmlandBlock) {
+								world.setBlockState(base, world.getBlockState(base).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
+							}
+
 							if (isFertilizable(world, base)) {
 								fertilizeables.add(base);
 							}
