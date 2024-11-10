@@ -10,6 +10,6 @@
     "item": "minecraft:netherite_ingot"
   },
   "result": {
-    "item": "watering_cans:giga_watering_can"
+    "id": "watering_cans:giga_watering_can"
   }
 }

@@ -1,6 +1,5 @@
 package cc.unilock.watering_cans.item;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.FarmlandBlock;
 import net.minecraft.block.Fertilizable;
@@ -11,7 +10,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.UseAction;
@@ -24,19 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WateringCanItem extends Item {
-	private static final double MAX_WATERING_DISTANCE = Math.sqrt(ServerPlayNetworkHandler.MAX_BREAK_SQUARED_DISTANCE) - 1.0;
-
 	private final int range;
 	private final int rate;
 
 	public WateringCanItem(int range, int rate) {
-		super(new FabricItemSettings().maxCount(1));
+		super(new Item.Settings().maxCount(1));
 		this.range = range;
 		this.rate = rate;
 	}
 
 	@Override
-	public int getMaxUseTime(ItemStack stack) {
+	public int getMaxUseTime(ItemStack stack, LivingEntity user) {
 		return 200;
 	}
 
@@ -79,7 +75,7 @@ public class WateringCanItem extends Item {
 							1.0)
 					);
 
-					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
+					if ((this.getMaxUseTime(stack, user) - remainingUseTicks + 1) % this.rate == 0) {
 						// TODO: this can likely be simplified further?
 						List<BlockPos> fertilizeables = new ArrayList<>();
 
@@ -130,10 +126,10 @@ public class WateringCanItem extends Item {
 	}
 
 	private HitResult getHitResult(LivingEntity user) {
-		return ProjectileUtil.getCollision(user, entity -> !entity.isSpectator() && entity.canHit(), MAX_WATERING_DISTANCE);
+		return ProjectileUtil.getCollision(user, entity -> !entity.isSpectator() && entity.canHit(), (user instanceof PlayerEntity player ? player.getBlockInteractionRange() : 4.5) - 1.0);
 	}
 
 	private static boolean isFertilizable(World world, BlockPos pos) {
-		return world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos), world.isClient);
+		return world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos));
 	}
 }
