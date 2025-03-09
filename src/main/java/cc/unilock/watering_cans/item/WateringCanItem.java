@@ -3,6 +3,7 @@ package cc.unilock.watering_cans.item;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.block.FarmlandBlock;
+import net.minecraft.block.Fertilizable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -18,6 +19,8 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+
+import static cc.unilock.watering_cans.WateringCans.CONFIG;
 
 public class WateringCanItem extends Item {
 	private static final double MAX_WATERING_DISTANCE = Math.sqrt(ServerPlayNetworkHandler.MAX_BREAK_SQUARED_DISTANCE) - 1.0;
@@ -72,12 +75,13 @@ public class WateringCanItem extends Item {
 					}
 
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
+						boolean fertilizableCfg = CONFIG.fertilizable.value();
 						for (BlockPos pos : BlockPos.iterateOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)) {
 							if (isMoisturizable(world, pos)) {
 								moisturize(world, pos);
 							}
 
-							if (isTickable(world, pos)) {
+							if (isTickable(world, pos, fertilizableCfg)) {
 								tick(world, pos);
 							}
 						}
@@ -105,8 +109,8 @@ public class WateringCanItem extends Item {
 		world.setBlockState(pos, world.getBlockState(pos).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
 	}
 
-	private static boolean isTickable(World world, BlockPos pos) {
-		return world.getBlockState(pos).hasRandomTicks();
+	private static boolean isTickable(World world, BlockPos pos, boolean fertilizableCfg) {
+		return world.getBlockState(pos).hasRandomTicks() && (!fertilizableCfg || (world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos), world.isClient)));
 	}
 
 	private static void tick(World world, BlockPos pos) {
