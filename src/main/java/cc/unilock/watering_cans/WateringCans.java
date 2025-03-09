@@ -2,6 +2,7 @@ package cc.unilock.watering_cans;
 
 import cc.unilock.watering_cans.registry.ModItems;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 public class WateringCans implements ModInitializer {
 	public static final String MOD_ID = "watering_cans";
     public static final Logger LOGGER = LoggerFactory.getLogger("WateringCans");
+	public static final WateringCansConfig CONFIG = WateringCansConfig.createToml(FabricLoader.getInstance().getConfigDir(), "", MOD_ID, WateringCansConfig.class);
 
 	@Override
 	public void onInitialize() {
