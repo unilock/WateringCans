@@ -20,9 +20,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class WateringCanItem extends Item {
 	private static final double MAX_WATERING_DISTANCE = Math.sqrt(ServerPlayNetworkHandler.MAX_BREAK_SQUARED_DISTANCE) - 1.0;
 
@@ -63,11 +60,7 @@ public class WateringCanItem extends Item {
 
 			if (hitResult instanceof BlockHitResult blockHitResult && hitResult.getType() == HitResult.Type.BLOCK) {
 				if (!world.isClient) {
-					List<BlockPos> blocks = BlockPos.streamOutwards(blockHitResult.getBlockPos(), this.range, 0, this.range)
-						.map(BlockPos::toImmutable)
-						.toList();
-
-					blocks.forEach(pos ->
+					for (BlockPos pos : BlockPos.iterateOutwards(blockHitResult.getBlockPos(), this.range, 0, this.range)) {
 						((ServerWorld) world).spawnParticles(ParticleTypes.SPLASH,
 							pos.getX() + world.random.nextDouble(),
 							pos.getY() + 1,
@@ -76,47 +69,19 @@ public class WateringCanItem extends Item {
 							0.0,
 							0.0,
 							0.0,
-							1.0)
-					);
+							1.0);
+					}
 
 					if ((this.getMaxUseTime(stack) - remainingUseTicks + 1) % this.rate == 0) {
-						// TODO: this can likely be simplified further?
-						List<BlockPos> fertilizeables = new ArrayList<>();
-
-						blocks.forEach(base -> {
-							if (world.getBlockState(base).getBlock() instanceof FarmlandBlock) {
-								world.setBlockState(base, world.getBlockState(base).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
+						for (BlockPos pos : BlockPos.iterateOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)) {
+							if (isMoisturizable(world, pos)) {
+								moisturize(world, pos);
 							}
 
-							if (isFertilizable(world, base)) {
-								fertilizeables.add(base);
+							if (isFertilizable(world, pos)) {
+								fertilize(world, pos);
 							}
-
-							BlockPos up = base.up();
-							if (isFertilizable(world, up)) {
-								fertilizeables.add(up);
-							}
-						});
-
-						if (fertilizeables.isEmpty()) return;
-
-						fertilizeables.forEach(pos -> {
-							if (world.getBlockState(pos).hasRandomTicks()) {
-								world.getBlockState(pos).randomTick((ServerWorld) world, pos, world.random);
-							}
-						});
-
-//						for (int i = 0; i <= this.range; i++) {
-//							BlockPos pos = list.get(world.random.nextInt(list.size()));
-//							BlockState state = world.getBlockState(pos);
-//							Fertilizable fertilizable = (Fertilizable) state.getBlock();
-//
-//							if (fertilizable.canGrow(world, world.random, pos, state)) {
-//								fertilizable.grow((ServerWorld) world, world.random, pos, state);
-//							}
-//
-//							world.syncWorldEvent(WorldEvents.BONE_MEAL_USED, pos, 0);
-//						}
+						}
 					}
 				}
 
@@ -133,7 +98,21 @@ public class WateringCanItem extends Item {
 		return ProjectileUtil.getCollision(user, entity -> !entity.isSpectator() && entity.canHit(), MAX_WATERING_DISTANCE);
 	}
 
+	private static boolean isMoisturizable(World world, BlockPos pos) {
+		return world.getBlockState(pos).getBlock() instanceof FarmlandBlock;
+	}
+
+	private static void moisturize(World world, BlockPos pos) {
+		world.setBlockState(pos, world.getBlockState(pos).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
+	}
+
 	private static boolean isFertilizable(World world, BlockPos pos) {
 		return world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos), world.isClient);
+	}
+
+	private static void fertilize(World world, BlockPos pos) {
+		if (world.getBlockState(pos).hasRandomTicks()) {
+			world.getBlockState(pos).randomTick((ServerWorld) world, pos, world.random);
+		}
 	}
 }
