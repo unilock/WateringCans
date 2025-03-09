@@ -71,13 +71,13 @@ public class WateringCanItem extends Item {
 					}
 
 					if ((this.getMaxUseTime(stack, user) - remainingUseTicks + 1) % this.rate == 0) {
-						boolean fertilizableCfg = CONFIG.fertilizable.value();
+						boolean skipFertilizable = !CONFIG.fertilizable.value();
 						for (BlockPos pos : BlockPos.iterateOutwards(blockHitResult.getBlockPos(), this.range, 1, this.range)) {
 							if (isMoisturizable(world, pos)) {
 								moisturize(world, pos);
 							}
 
-							if (isTickable(world, pos, fertilizableCfg)) {
+							if (isTickable(world, pos, skipFertilizable)) {
 								tick(world, pos);
 							}
 						}
@@ -105,8 +105,8 @@ public class WateringCanItem extends Item {
 		world.setBlockState(pos, world.getBlockState(pos).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
 	}
 
-	private static boolean isTickable(World world, BlockPos pos, boolean fertilizableCfg) {
-		return world.getBlockState(pos).hasRandomTicks() && (!fertilizableCfg || (world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos))));
+	private static boolean isTickable(World world, BlockPos pos, boolean skipFertilizable) {
+		return world.getBlockState(pos).hasRandomTicks() && (skipFertilizable || (world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos))));
 	}
 
 	private static void tick(World world, BlockPos pos) {
