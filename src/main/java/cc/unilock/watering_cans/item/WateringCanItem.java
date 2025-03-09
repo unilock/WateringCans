@@ -2,7 +2,6 @@ package cc.unilock.watering_cans.item;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.FarmlandBlock;
-import net.minecraft.block.Fertilizable;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
@@ -74,8 +73,8 @@ public class WateringCanItem extends Item {
 								moisturize(world, pos);
 							}
 
-							if (isFertilizable(world, pos)) {
-								fertilize(world, pos);
+							if (isTickable(world, pos)) {
+								tick(world, pos);
 							}
 						}
 					}
@@ -102,13 +101,11 @@ public class WateringCanItem extends Item {
 		world.setBlockState(pos, world.getBlockState(pos).with(FarmlandBlock.MOISTURE, 7), Block.NOTIFY_LISTENERS);
 	}
 
-	private static boolean isFertilizable(World world, BlockPos pos) {
-		return world.getBlockState(pos).getBlock() instanceof Fertilizable fertilizable && fertilizable.isFertilizable(world, pos, world.getBlockState(pos));
+	private static boolean isTickable(World world, BlockPos pos) {
+		return world.getBlockState(pos).hasRandomTicks();
 	}
 
-	private static void fertilize(World world, BlockPos pos) {
-		if (world.getBlockState(pos).hasRandomTicks()) {
-			world.getBlockState(pos).randomTick((ServerWorld) world, pos, world.random);
-		}
+	private static void tick(World world, BlockPos pos) {
+		world.getBlockState(pos).randomTick((ServerWorld) world, pos, world.random);
 	}
 }
