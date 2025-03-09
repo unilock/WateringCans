@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.8.+'
+	id 'fabric-loom' version '1.10.+'
 	id 'maven-publish'
 }
 
@@ -10,20 +10,20 @@ base {
 	archivesName = project.archives_base_name
 }
 
+loom {
+	mods {
+		"watering_cans" {
+			sourceSet("main")
+		}
+	}
+}
+
 repositories {
 	// Add repositories to retrieve artifacts from in here.
 	// You should only use this when depending on other mods because
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
-}
-
-loom {
-    mods {
-		"watering_cans" {
-			sourceSet("main")
-		}
-	}
 }
 
 dependencies {
@@ -63,7 +63,8 @@ jar {
 // Configure the maven publication
 publishing {
 	publications {
-		mavenJava(MavenPublication) {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
 			from components.java
 		}
 	}
